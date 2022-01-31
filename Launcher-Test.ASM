@@ -1,11 +1,23 @@
 ;-------------------------------------------------------------------------------------------------------------------
-;GTA3, Basic Game Launcher for Mp!  in x86 ASM - (c) 2021 Motley - Game Launcher!
+;GTA3, Basic Game Launcher for Mp!  in x86 ASM - (c) 2021 Robert Rayner - Game Launcher!
 ;-------------------------------------------------------------------------------------------------------------------
+;                                            x86 Windows
+;
+;                                             1/30/22
+;
+;-------------------------------------------------------------------------------------------------------------------
+
 
 format PE GUI 4.0
 entry start
 
 include 'win32a.inc'
+meemul db 'E:\Backup\gta3.lnk',0
+progpath db 'E:\Backup\'
+_open   db 'open',0
+
+
+
 
 ID_CAPTION         = 101
 ID_MESSAGE         = 102
@@ -74,6 +86,9 @@ proc DialogProc hwnddlg,msg,wparam,lparam
 
 
       .topmost_ok:
+
+;Manual test here for game load
+        invoke ShellExecute,0,_open,meemul,progpath,0,SW_SHOWDEFAULT
         invoke  EndDialog,[hwnddlg],1
         jmp     .processed
   .wmclose:
@@ -92,9 +107,14 @@ section '.bss' readable writeable
   message rb 100h
 
 section '.idata' import data readable writeable
-
   library kernel,'KERNEL32.DLL',\
-          user,'USER32.DLL'
+          user,'USER32.DLL',\
+          shell,'SHELL32.DLL'
+
+import shell,\ 
+    ShellExecute,'ShellExecuteA'
+
+
 
   import kernel,\
          GetModuleHandle,'GetModuleHandleA',\
@@ -106,6 +126,9 @@ section '.idata' import data readable writeable
          IsDlgButtonChecked,'IsDlgButtonChecked',\
          MessageBox,'MessageBoxA',\
          EndDialog,'EndDialog'
+
+
+
 
 section '.rsrc' resource data readable
 
@@ -121,7 +144,7 @@ section '.rsrc' resource data readable
     dialogitem 'EDIT','',ID_MESSAGE,10,50,170,13,WS_VISIBLE+WS_BORDER+WS_TABSTOP+ES_AUTOHSCROLL
 
     ; Needs feature
-    dialogitem 'EDIT','&Log',-1,10,70,160,70,WS_VISIBLE+WS_BORDER+WS_TABSTOP
+    dialogitem 'EDIT','',-1,10,70,160,70,WS_VISIBLE+WS_BORDER+WS_TABSTOP
 
     dialogitem 'BUTTON','Launch',IDOK,85,150,45,15,WS_VISIBLE+WS_TABSTOP+BS_DEFPUSHBUTTON
     dialogitem 'BUTTON','&Close',IDCANCEL,135,150,45,15,WS_VISIBLE+WS_TABSTOP+BS_PUSHBUTTON
