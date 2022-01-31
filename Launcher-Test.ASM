@@ -12,7 +12,8 @@ format PE GUI 4.0
 entry start
 
 include 'win32a.inc'
-meemul db 'E:\Backup\gta3.lnk',0
+;Make blank. Set it when launch is called from directoy box
+meemul db '',0
 progpath db 'E:\Backup\'
 _open   db 'open',0
 
@@ -88,7 +89,8 @@ proc DialogProc hwnddlg,msg,wparam,lparam
       .topmost_ok:
 
 ;Manual test here for game load
-        invoke ShellExecute,0,_open,meemul,progpath,0,SW_SHOWDEFAULT
+
+        invoke ShellExecute,0,_open,message,message,0,SW_SHOWDEFAULT
         invoke  EndDialog,[hwnddlg],1
         jmp     .processed
   .wmclose:
