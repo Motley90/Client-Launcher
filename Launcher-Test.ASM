@@ -3,11 +3,11 @@
 ;-------------------------------------------------------------------------------------------------------------------
 format PE GUI 4.0
 entry start
-
 include 'win32a.inc'
 
 ID_PLAYERNAME = 101
 ID_GAME = 102
+ID_CONSOLE = 103
 
 section '.text' code readable executable
 
@@ -35,8 +35,14 @@ proc DialogProc hwnddlg,msg,wparam,lparam
         jne     .processed
         invoke  GetDlgItemText,[hwnddlg],ID_PLAYERNAME,player_name,40h
         invoke  GetDlgItemText,[hwnddlg],ID_GAME,game,100h
+       ; invoke  consoleinput, [hwnddlg],['55']
+     ; invoke consoleinput,[hwnddlg],'J'
+
+
 
       .topmost_ok:
+        ;invoke  SetDlgItemText,[hwnddlg],ID_CONSOLE,'',160h; FOR TESTING
+        ;consoleinput; hWnd   ;NOT WORKING
         invoke ShellExecute,0,0,game,game,0,SW_SHOWDEFAULT
         jmp     .processed
   .wmclose:
@@ -50,11 +56,20 @@ endp
 
 section '.bss' readable writeable
   player_name rb 40h
-  game rb 100h
+  game rb 100h  
+  console rb 160h
+
+; BUGGED, STUDYING THIS AREA
+proc consoleinput hWnd
+          ;invoke  SetDlgItemText,[hWnd],ID_CONSOLE,[input],160h
+          invoke  SetDlgItemText,[hWnd],ID_CONSOLE,'DID I DO WORK?',160h
+        ret
+endp
 
 section '.idata' import data readable writeable
   library kernel,'KERNEL32.DLL',\
           user,'USER32.DLL',\
+          consoleinput,'SendInput.DLL',\
           shell,'SHELL32.DLL'
 
 import shell,\ 
@@ -67,9 +82,13 @@ import shell,\
   import user,\
          DialogBoxParam,'DialogBoxParamA',\
          GetDlgItemText,'GetDlgItemTextA',\
-         IsDlgButtonChecked,'IsDlgButtonChecked',\
-         MessageBox,'MessageBoxA',\
+         SetDlgItemText,'SetDlgItemTextA',\
          EndDialog,'EndDialog'
+
+section '.edata' export data readable
+
+  export 'SendInput.DLL',\
+         consoleinput,'SendText'
 
 section '.rsrc' resource data readable
 
@@ -85,7 +104,7 @@ section '.rsrc' resource data readable
     dialogitem 'EDIT','',ID_GAME,10,50,170,13,WS_VISIBLE+WS_BORDER+WS_TABSTOP+ES_AUTOHSCROLL
 
     ; Needs feature
-    dialogitem 'EDIT','',-1,10,70,160,70,WS_VISIBLE+WS_BORDER+WS_TABSTOP
+    dialogitem 'EDIT','E',ID_CONSOLE,10,70,160,70,WS_VISIBLE+WS_CHILD+WS_VSCROLL+ES_AUTOVSCROLL+ES_MULTILINE
 
     dialogitem 'BUTTON','Launch',IDOK,85,150,45,15,WS_VISIBLE+WS_TABSTOP+BS_DEFPUSHBUTTON
     dialogitem 'BUTTON','&Close',IDCANCEL,135,150,45,15,WS_VISIBLE+WS_TABSTOP+BS_PUSHBUTTON
